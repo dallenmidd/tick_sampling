@@ -1,42 +1,12 @@
-setwd('/Users/dallen/Google\ Drive/Research/lyme/2019/sampling\ manu/')
+### Code for Borgmann-Winter and Allen manuscript
+## How does the distance between drag cloth checks affect tick density estimate
 
+# load required packages
 require(tidyverse)
 require(bbmle)
 
-drag_data <- read_csv('variable_drag_dist_data.csv') %>%
-  mutate(rep_treat = paste(date, rep, treatment,sep='-'),
-         rep = paste(date, rep,sep='-') )
 
-drag_data_mod <- drag_data %>%
-  group_by(rep_treat) %>%
-  summarise(
-    female = sum(female),
-    male = sum(male),
-    #adult = sum(female) + sum(male),
-    nymph = sum(nymph),
-    treatment = unique(treatment)
-  ) %>%
-  gather('life_stage',"number",c('female','male','nymph'))
-  #gather('life_stage',"number",c('adult','nymph'))
-
-drag_data_mod %>%
-  mutate(treatment2 = as.numeric(substr(treatment,1,2))) %>%
-  filter(life_stage == "male") %>%
-  glm(number ~ treatment2, data = ., family ='poisson') %>%
-  #aov() %>%
-  summary()
-
-
-
-drag_data_sum <-
-  drag_data_mod %>%
-  group_by(life_stage,treatment) %>%
-  summarise(
-   mean = mean(number),
-   error = sd(number)/(n()^0.5),
-   n = n()
-  ) 
-
+# load in data from persistence trials
 dropoff_data <- read_csv('dropoff_rate_data.csv') 
 
 nll_fun <- function(k, drag_dist, stay_on)
@@ -73,6 +43,48 @@ dropoff_data %>%
   group_by(life_stage) %>%
   count()
 
+# reduction in nymphal density estimate when checking every 10, 20 or 30 m
+# equation from diff eq in Milne et al. (1943)
+(1-exp(-n_rate*10))/(n_rate*10)
+(1-exp(-n_rate*20))/(n_rate*20)
+(1-exp(-n_rate*30))/(n_rate*30)
+
+
+# load in data from variable distance drag experiments
+drag_data <- read_csv('variable_drag_dist_data.csv') %>%
+  mutate(rep_treat = paste(date, rep, treatment,sep='-'),
+         rep = paste(date, rep,sep='-') )
+
+drag_data_mod <- drag_data %>%
+  group_by(rep_treat) %>%
+  summarise(
+    female = sum(female),
+    male = sum(male),
+    #adult = sum(female) + sum(male),
+    nymph = sum(nymph),
+    treatment = unique(treatment)
+  ) %>%
+  gather('life_stage',"number",c('female','male','nymph'))
+  #gather('life_stage',"number",c('adult','nymph'))
+
+drag_data_mod %>%
+  mutate(treatment2 = as.numeric(substr(treatment,1,2))) %>%
+  filter(life_stage == "nymph") %>%
+  glm(number ~ treatment2, data = ., family ='poisson') %>%
+  #aov() %>%
+  summary()
+
+
+drag_data_sum <-
+  drag_data_mod %>%
+  group_by(life_stage,treatment) %>%
+  summarise(
+   mean = mean(number),
+   error = sd(number)/(n()^0.5),
+   n = n()
+  ) 
+
+
 drop_fun <- function(d,r) 10*(1-exp(-d*r))/(d*(1-exp(-10*r)))
 drag_data_sum <- drag_data_sum %>%
   ungroup() %>%
@@ -81,11 +93,9 @@ drag_data_sum <- drag_data_sum %>%
                   NA, mean[7]*drop_fun(20,n_rate), mean[7]*drop_fun(30,n_rate)) )
 
 
-(1-exp(-n_rate*10))/(n_rate*10)
-(1-exp(-n_rate*20))/(n_rate*20)
-(1-exp(-n_rate*30))/(n_rate*30)
 
 
+# old version of figure 1
 pdf('figure_1.pdf',width = 6,height = 4)
   y_axis_lab <- expression(paste('Individuals (per 60 ',m^2,')'))
   drag_data_sum %>%
@@ -123,10 +133,6 @@ pdf('figure_1v2.pdf',width = 6,height = 4)
     geom_blank(data=axis_lim, aes(y=y_max)) +
     geom_text(data=axis_lim, aes(x=x_lab,y=y_lab,label=label),size=5)
 dev.off()
-
-drag_data_sum
-
-#########
 
 
 
