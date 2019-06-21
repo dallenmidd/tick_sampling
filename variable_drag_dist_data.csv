@@ -1,4 +1,4 @@
-﻿date,location,sampler,time,rep,treatment,drag_num,female,male,nymph
+﻿date,location,sampler,time,rep,treatment,check_num,female,male,nymph
 5/13/19,Foote,Ben,10:15,1,10 m,1,1,1,0
 5/13/19,Foote,Ben,10:15,1,10 m,2,0,0,0
 5/13/19,Foote,Ben,10:15,1,10 m,3,0,0,1

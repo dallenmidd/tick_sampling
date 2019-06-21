@@ -5,7 +5,6 @@
 require(tidyverse)
 require(bbmle)
 
-
 # load in data from persistence trials
 dropoff_data <- read_csv('dropoff_rate_data.csv') 
 
@@ -67,6 +66,7 @@ drag_data_mod <- drag_data %>%
   gather('life_stage',"number",c('female','male','nymph'))
   #gather('life_stage',"number",c('adult','nymph'))
 
+# change life_stage == "nymph" for other life stages
 drag_data_mod %>%
   mutate(treatment2 = as.numeric(substr(treatment,1,2))) %>%
   filter(life_stage == "nymph") %>%
@@ -92,23 +92,9 @@ drag_data_sum <- drag_data_sum %>%
                   NA, mean[4]*drop_fun(20,m_rate), mean[4]*drop_fun(30,m_rate),
                   NA, mean[7]*drop_fun(20,n_rate), mean[7]*drop_fun(30,n_rate)) )
 
-
-
-
-# old version of figure 1
-pdf('figure_1.pdf',width = 6,height = 4)
-  y_axis_lab <- expression(paste('Individuals (per 60 ',m^2,')'))
-  drag_data_sum %>%
-    ggplot(aes(life_stage,mean,fill=treatment)) +
-    geom_col(position = 'dodge2') + 
-    geom_errorbar(aes(x=life_stage, ymin=mean-error,ymax=mean+error),position = position_dodge2()) + 
-    labs(x = "Life stage", y = y_axis_lab) +
-    geom_point(aes(x=life_stage,y=pred),position = position_dodge2(0.9),pch=1,size=3)
-dev.off()
-
 axis_lim <- tibble(
   y_min = c(0,0,0),
-  y_max = c(0.425,0.425,4.75),
+  y_max = c(0.4,0.4,4.75),
   y_lab = y_max*0.975,
   x_lab = rep(0.75,3),
   life_stage = c('female', 'male', 'nymph'),
@@ -125,7 +111,9 @@ pdf('figure_1v2.pdf',width = 6,height = 4)
     geom_errorbar(aes(x=treatment, ymin=mean-error,ymax=mean+error),width=0.75) + 
     labs(x = "", y = y_axis_lab) +
     theme_classic() + 
-    theme(strip.background = element_rect(color = 'transparent'), strip.text = element_blank()) +
+    theme(strip.background = element_rect(color = 'transparent'), 
+          strip.text = element_blank(),
+          axis.text = element_text(color='black')) +
     geom_point(aes(x=treatment,y=pred),pch=1,size=3) +
     scale_x_discrete(expand=c(0,0)) +
     scale_y_continuous(expand=c(0,0)) +
@@ -134,5 +122,13 @@ pdf('figure_1v2.pdf',width = 6,height = 4)
     geom_text(data=axis_lim, aes(x=x_lab,y=y_lab,label=label),size=5)
 dev.off()
 
-
-
+# old version of figure 1
+pdf('figure_1.pdf',width = 6,height = 4)
+  y_axis_lab <- expression(paste('Individuals (per 60 ',m^2,')'))
+  drag_data_sum %>%
+    ggplot(aes(life_stage,mean,fill=treatment)) +
+    geom_col(position = 'dodge2') + 
+    geom_errorbar(aes(x=life_stage, ymin=mean-error,ymax=mean+error),position = position_dodge2()) + 
+    labs(x = "Life stage", y = y_axis_lab) +
+    geom_point(aes(x=life_stage,y=pred),position = position_dodge2(0.9),pch=1,size=3)
+dev.off()
