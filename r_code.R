@@ -71,7 +71,6 @@ drag_data_mod %>%
   mutate(treatment2 = as.numeric(substr(treatment,1,2))) %>%
   filter(life_stage == "nymph") %>%
   glm(number ~ treatment2, data = ., family ='poisson') %>%
-  #aov() %>%
   summary()
 
 
