@@ -5,7 +5,7 @@ Drag cloth sampling is a standard method to sample for questing ticks. A drag cl
 
 `dropoff_rate_data.csv` has the data from the experiment where we estimate the rate at which ticks drop off the drag cloth.
 
-`variable_drag_dist_data.csv` had the data from the experiment where we measure tick density with drag sampling checking at difference distance intervals.
+`variable_drag_dist_data.csv` had the data from the experiment where we measure tick density with drag sampling checking at different distance intervals.
 
 `r_code.R` has the code to analyze these experiments.
 
