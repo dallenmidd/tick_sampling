@@ -15,6 +15,30 @@ nll_fun <- function(k, drag_dist, stay_on)
   return(-sum(nll))
 }
 
+mod1 <- function(k, drag_dist, stay_on, list_stage)
+{
+  expProb <- exp(-k*drag_dist)
+  nll <- dbinom(x = stay_on, size = 1, prob = expProb, log = T)
+  return(-sum(nll))
+}
+mod2 <- function(k_n, k_a, drag_dist, stay_on, list_stage)
+{
+  k <- ifelse(life_stage == 'N',k_n,k_a)
+  expProb <- exp(-k*drag_dist)
+  nll <- dbinom(x = stay_on, size = 1, prob = expProb, log = T)
+  return(-sum(nll))
+}
+mod3 <- function(k_n, k_m, k_f, drag_dist, stay_on, list_stage)
+{
+  k <- ifelse(life_stage == 'N',k_n,ifelse(life_stage == 'M', k_m,k_f))
+  expProb <- exp(-k*drag_dist)
+  nll <- dbinom(x = stay_on, size = 1, prob = expProb, log = T)
+  return(-sum(nll))
+}
+
+
+
+
 f_data <- dropoff_data %>% 
   filter(life_stage == 'F') %>%
   list(drag_dist = .$drag_dist, stay_on = .$stay_on)
@@ -24,6 +48,9 @@ m_data <- dropoff_data %>%
 n_data <- dropoff_data %>% 
   filter(life_stage == 'N') %>%
   list(drag_dist = .$drag_dist, stay_on = .$stay_on)
+all_data <- dropoff_data %>%
+  select(drag_dist, stay_on, life_stage) %>%
+  as.list()
 
 f_fit <- mle2(nll_fun, start = list(k=0.1), data = f_data)
 f_rate <- f_fit %>% coef() %>% unname()
@@ -36,6 +63,10 @@ confint(m_fit)
 n_fit <- mle2(nll_fun, start = list(k=0.04), data = n_data)
 n_rate <- n_fit %>% coef() %>% unname()
 confint(n_fit)
+
+m1_fit <- mle2(mod1, start = list(k = 0.07), data = all_data)
+m2_fit <- mle2(mod2, start = list(k_n = 0.05, k_a = 0.08), data = all_data)
+m3_fit <- mle2(mod3, start = list(k_n = 0.05, k_m = 0.07, k_f = 0.1 ), data = all_data)
 
 dropoff_data %>%
   filter(dist_start == 0) %>%
