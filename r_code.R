@@ -67,6 +67,8 @@ confint(n_fit)
 m1_fit <- mle2(mod1, start = list(k = 0.07), data = all_data)
 m2_fit <- mle2(mod2, start = list(k_n = 0.05, k_a = 0.08), data = all_data)
 m3_fit <- mle2(mod3, start = list(k_n = 0.05, k_m = 0.07, k_f = 0.1 ), data = all_data)
+a_rate <- coef(m2_fit)['k_a']
+
 
 dropoff_data %>%
   filter(dist_start == 0) %>%
@@ -90,17 +92,17 @@ drag_data_mod <- drag_data %>%
   summarise(
     female = sum(female),
     male = sum(male),
-    #adult = sum(female) + sum(male),
+    adult = sum(female) + sum(male),
     nymph = sum(nymph),
     treatment = unique(treatment)
   ) %>%
-  gather('life_stage',"number",c('female','male','nymph'))
-  #gather('life_stage',"number",c('adult','nymph'))
+  #gather('life_stage',"number",c('female','male','nymph'))
+  gather('life_stage',"number",c('adult','nymph'))
 
 # change life_stage == "nymph" for other life stages
 drag_data_mod %>%
   mutate(treatment2 = as.numeric(substr(treatment,1,2))) %>%
-  filter(life_stage == "nymph") %>%
+  filter(life_stage == "adult") %>%
   glm(number ~ treatment2, data = ., family ='poisson') %>%
   summary()
 
@@ -114,7 +116,7 @@ drag_data_sum <-
    n = n()
   ) 
 
-
+# if N v M v F
 drop_fun <- function(d,r) 10*(1-exp(-d*r))/(d*(1-exp(-10*r)))
 drag_data_sum <- drag_data_sum %>%
   ungroup() %>%
@@ -122,6 +124,13 @@ drag_data_sum <- drag_data_sum %>%
                   NA, mean[4]*drop_fun(20,m_rate), mean[4]*drop_fun(30,m_rate),
                   NA, mean[7]*drop_fun(20,n_rate), mean[7]*drop_fun(30,n_rate)) )
 
+# if N v A
+drag_data_sum <- drag_data_sum %>%
+  ungroup() %>%
+  mutate(pred = c(NA, mean[1]*drop_fun(20,a_rate), mean[1]*drop_fun(30,a_rate),
+                  NA, mean[4]*drop_fun(20,n_rate), mean[4]*drop_fun(30,n_rate)) )
+
+# if N v M v F
 axis_lim <- tibble(
   y_min = c(0,0,0),
   y_max = c(0.4,0.4,4.75),
@@ -161,4 +170,37 @@ pdf('figure_1.pdf',width = 6,height = 4)
     geom_errorbar(aes(x=life_stage, ymin=mean-error,ymax=mean+error),position = position_dodge2()) + 
     labs(x = "Life stage", y = y_axis_lab) +
     geom_point(aes(x=life_stage,y=pred),position = position_dodge2(0.9),pch=1,size=3)
+dev.off()
+
+
+
+# if just N v A
+axis_lim <- tibble(
+  y_min = c(0,0),
+  y_max = c(0.8,4.75),
+  y_lab = y_max*0.975,
+  x_lab = rep(0.75,2),
+  life_stage = c('adult', 'nymph'),
+  treatment = c('10 m','10 m'),
+  label = c('A','B')
+)
+
+pdf('figure_1v3.pdf',width = 6,height = 4)
+  y_axis_lab <- expression(paste('Individuals (per 60 ',m^2,')'))
+  drag_data_sum %>%
+    ggplot(aes(treatment,mean)) +
+    facet_wrap(~life_stage, scales = 'free_y') +
+    geom_col(fill=rgb(0.75,0.75,0.75)) + 
+    geom_errorbar(aes(x=treatment, ymin=mean-error,ymax=mean+error),width=0.75) + 
+    labs(x = "", y = y_axis_lab) +
+    theme_classic() + 
+    theme(strip.background = element_rect(color = 'transparent'), 
+          strip.text = element_blank(),
+          axis.text = element_text(color='black')) +
+    geom_point(aes(x=treatment,y=pred),pch=1,size=3) +
+    scale_x_discrete(expand=c(0,0)) +
+    scale_y_continuous(expand=c(0,0)) +
+    geom_blank(data=axis_lim,aes(y = y_min)) +
+    geom_blank(data=axis_lim, aes(y=y_max)) +
+    geom_text(data=axis_lim, aes(x=x_lab,y=y_lab,label=label),size=5)
 dev.off()
