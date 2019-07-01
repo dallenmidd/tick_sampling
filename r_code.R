@@ -75,7 +75,7 @@ drag_data_mod <- drag_data %>%
 # change life_stage == "nymph" for other life stages
 drag_data_mod %>%
   mutate(treatment2 = as.numeric(substr(treatment,1,2))) %>%
-  filter(life_stage == "nymph") %>%
+  filter(life_stage == "adult") %>%
   glm(number ~ treatment2, data = ., family ='poisson') %>%
   summary()
 
