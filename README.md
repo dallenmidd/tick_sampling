@@ -9,4 +9,4 @@ Drag cloth sampling is a standard method to sample for questing ticks. A drag cl
 
 `r_code.R` has the code to analyze these experiments.
 
-This analysis is part of a manuscript in preparation.
+This analysis is part of a manuscript in review.

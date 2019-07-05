@@ -158,6 +158,7 @@ axis_lim <- tibble(
   label = c('A','B')
 )
 
+# version included in the manuscript
 pdf('figure_1v3.pdf',width = 6,height = 4)
   y_axis_lab <- expression(paste('Individuals (per 60 ',m^2,')'))
   drag_data_sum %>%
