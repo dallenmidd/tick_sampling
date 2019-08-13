@@ -178,3 +178,32 @@ pdf('figure_1v3.pdf',width = 6,height = 4)
     geom_blank(data=axis_lim, aes(y=y_max)) +
     geom_text(data=axis_lim, aes(x=x_lab,y=y_lab,label=label),size=5)
 dev.off()
+
+
+# calculations for table 1
+# find k in equation p(d) = exp(-k*d)
+# where k is drop off rate, d is distance dragged, 
+# and p(d) is probability tick stays on that long
+
+# Schulze and Jordan (2001) http://doi.org/10.1603/0022-2585-38.4.606
+# Amblyomma americanum -- sparse vegetation
+- log(0.5)/60
+# Amblyomma americanum -- dense vegetation
+- log(0.5)/15.5
+# Ixodes scapularis -- sparse vegetation
+- log(0.5)/38
+# Ixodes scapularis -- dense vegetation
+- log(0.5)/11.5
+
+# Uspensky (1993) http://doi.org/10.1007/BF00058507 
+# Ixodes persulcatus -- 6 - 10 C
+- log(30.5/50)/25
+# Ixodes persulcatus -- 17 - 22 C
+- log(34.6/50)/25
+# Ixodes ricinus -- 6 - 10 C
+- log(13.4/50)/25
+# Ixodes ricinus -- 17 - 22 C
+- log(28.2/50)/25
+
+# Li and Dunley (1998) https://doi.org/10.1023/A:1006018432064
+# report k directly
